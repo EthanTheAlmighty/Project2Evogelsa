@@ -14,7 +14,10 @@ public class EnemyWindow : EditorWindow {
     //stats to be shown in tool
     string myName = "";
     Sprite notMySprite;
-    int myHealth = 1;
+    int myHealth = 1, myAtk, myDef, myAgi, myMana;
+    public float myAtkTime;
+    public bool magical;
+
 
     //choices for if it's a new enemy or a stored one
     public int currentRoyce = 0;
@@ -53,8 +56,25 @@ public class EnemyWindow : EditorWindow {
         }
 
         notMySprite = (Sprite)EditorGUILayout.ObjectField(notMySprite, typeof(Sprite), false) as Sprite;
-        myName = EditorGUILayout.TextField("Name: ", myName);
+        myName = EditorGUILayout.DelayedTextField("Name: ", myName);
         myHealth = EditorGUILayout.IntSlider("Health: ", myHealth, 1, 300);
+        myAtk = EditorGUILayout.IntSlider("Attack: ", myAtk, 1, 100);
+        myAtkTime = EditorGUILayout.Slider("Attack Time: ", myAtkTime, 1, 20);
+        myDef = EditorGUILayout.IntSlider("Defense: ", myDef, 1, 100);
+        myAgi = EditorGUILayout.IntSlider("Attack: ", myAgi, 1, 100);
+        magical = EditorGUILayout.Toggle("Has Magic", magical);
+
+        if(magical)
+        {
+            myMana = EditorGUILayout.IntSlider("Mana: ", myMana, 1, 100);
+        }
+        else
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+        }
+
 
         EditorGUILayout.Space();
 
@@ -134,13 +154,41 @@ public class EnemyWindow : EditorWindow {
     {
         //other stats
         myName = enemyList[currentRoyce - 1].emname;
+        myHealth = enemyList[currentRoyce - 1].health;
+        myAtk = enemyList[currentRoyce - 1].atk;
+        myDef = enemyList[currentRoyce - 1].def;
+        myAgi = enemyList[currentRoyce - 1].agi;
+        myAtkTime = enemyList[currentRoyce - 1].atkTime;
+        notMySprite = enemyList[currentRoyce - 1].mySprite;
+        if(enemyList[currentRoyce - 1].isMagic)
+        {
+            magical = enemyList[currentRoyce - 1].isMagic;
+            myMana = enemyList[currentRoyce - 1].manaPool;
+        }
+
     }
 
     private void SaveEnemy()
     {
         //other stats
         enemyList[currentRoyce - 1].emname = myName;
-
+        enemyList[currentRoyce - 1].health = myHealth;
+        enemyList[currentRoyce - 1].atk = myAtk;
+        enemyList[currentRoyce - 1].def = myDef;
+        enemyList[currentRoyce - 1].agi = myAgi;
+        enemyList[currentRoyce - 1].atkTime = myAtkTime;
+        enemyList[currentRoyce - 1].mySprite = notMySprite;
+        if(magical)
+        {
+            enemyList[currentRoyce - 1].isMagic = magical;
+            enemyList[currentRoyce - 1].manaPool = myMana;
+        }
+        else
+        {
+            enemyList[currentRoyce - 1].isMagic = magical;
+        }
+        SwitchFlags();
+        //AssetDatabase.SaveAssets();
     }
 
     private bool CreateEnemies()
@@ -164,7 +212,21 @@ public class EnemyWindow : EditorWindow {
         }
         Enemies myEnemy = ScriptableObject.CreateInstance<Enemies>();
         myEnemy.emname = myName;
+        myEnemy.mySprite = notMySprite;
         myEnemy.health = myHealth;
+        myEnemy.atk = myAtk;
+        myEnemy.def = myDef;
+        myEnemy.agi = myAgi;
+        myEnemy.atkTime = myAtkTime;
+        if(magical)
+        {
+            myEnemy.isMagic = magical;
+            myEnemy.manaPool = myMana;
+        }
+        else
+        {
+            myEnemy.isMagic = magical;
+        }
         AssetDatabase.CreateAsset(myEnemy, "Assets/Resources/Data/EnemyData/" + myEnemy.emname.Replace(" ", "_") + ".asset");
         nameFlag = false;
         getEnemies();
@@ -175,6 +237,7 @@ public class EnemyWindow : EditorWindow {
                 currentRoyce = i + 1;
             }
         }
+        //AssetDatabase.SaveAssets();
         return true;
     }
 
