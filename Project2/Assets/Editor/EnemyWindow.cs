@@ -35,6 +35,7 @@ public class EnemyWindow : EditorWindow {
     }
     void Awake()
     {
+        SwitchFlags();
         getEnemies();
     }
 
@@ -61,7 +62,7 @@ public class EnemyWindow : EditorWindow {
         myAtk = EditorGUILayout.IntSlider("Attack: ", myAtk, 1, 100);
         myAtkTime = EditorGUILayout.Slider("Attack Time: ", myAtkTime, 1, 20);
         myDef = EditorGUILayout.IntSlider("Defense: ", myDef, 1, 100);
-        myAgi = EditorGUILayout.IntSlider("Attack: ", myAgi, 1, 100);
+        myAgi = EditorGUILayout.IntSlider("Agility: ", myAgi, 1, 100);
         magical = EditorGUILayout.Toggle("Has Magic", magical);
 
         if(magical)
@@ -82,6 +83,7 @@ public class EnemyWindow : EditorWindow {
         {
             if(GUILayout.Button("Create"))
             {
+                SwitchFlags();
                 CreateEnemies();
             }
         }
@@ -89,12 +91,14 @@ public class EnemyWindow : EditorWindow {
         {
             if (GUILayout.Button("Save"))
             {
+                SwitchFlags();
                 SaveEnemy();
             }
         }
 
         if (currentRoyce != lastRoyce)
         {
+            lastRoyce = currentRoyce;
             switch (currentRoyce)
             {
                 case 0:
@@ -111,7 +115,7 @@ public class EnemyWindow : EditorWindow {
         {
             EditorGUILayout.HelpBox("Name Can not be blank", MessageType.Warning);
         }
-        if (existingFlag)
+        if(existingFlag)
         {
             EditorGUILayout.HelpBox("This Unit Already exists", MessageType.Error);
         }
@@ -144,7 +148,15 @@ public class EnemyWindow : EditorWindow {
     private void NewEnemy()
     {
         myHealth = 1;
+        notMySprite = null;
         myName = "";
+        myHealth = 1;
+        myAtk = 1;
+        myAtkTime = 1;
+        myDef = 1;
+        myAgi = 1;
+        magical = false;
+        myMana = 1;
         //existingFlag = false;
         //nameFlag = false;
         SwitchFlags();
@@ -160,11 +172,8 @@ public class EnemyWindow : EditorWindow {
         myAgi = enemyList[currentRoyce - 1].agi;
         myAtkTime = enemyList[currentRoyce - 1].atkTime;
         notMySprite = enemyList[currentRoyce - 1].mySprite;
-        if(enemyList[currentRoyce - 1].isMagic)
-        {
-            magical = enemyList[currentRoyce - 1].isMagic;
-            myMana = enemyList[currentRoyce - 1].manaPool;
-        }
+        magical = enemyList[currentRoyce - 1].isMagic;
+        myMana = enemyList[currentRoyce - 1].manaPool;
 
     }
 
@@ -178,21 +187,17 @@ public class EnemyWindow : EditorWindow {
         enemyList[currentRoyce - 1].agi = myAgi;
         enemyList[currentRoyce - 1].atkTime = myAtkTime;
         enemyList[currentRoyce - 1].mySprite = notMySprite;
-        if(magical)
-        {
-            enemyList[currentRoyce - 1].isMagic = magical;
-            enemyList[currentRoyce - 1].manaPool = myMana;
-        }
-        else
-        {
-            enemyList[currentRoyce - 1].isMagic = magical;
-        }
+        enemyList[currentRoyce - 1].isMagic = magical;
+        enemyList[currentRoyce - 1].manaPool = myMana;
+        
         SwitchFlags();
-        //AssetDatabase.SaveAssets();
+        EditorUtility.SetDirty(enemyList[currentRoyce - 1]);
+        AssetDatabase.SaveAssets();
     }
 
     private bool CreateEnemies()
     {
+        SwitchFlags();
         if (myName == string.Empty)
         {
             nameFlag = true;
@@ -218,26 +223,18 @@ public class EnemyWindow : EditorWindow {
         myEnemy.def = myDef;
         myEnemy.agi = myAgi;
         myEnemy.atkTime = myAtkTime;
-        if(magical)
-        {
-            myEnemy.isMagic = magical;
-            myEnemy.manaPool = myMana;
-        }
-        else
-        {
-            myEnemy.isMagic = magical;
-        }
+        myEnemy.isMagic = magical;
+        myEnemy.manaPool = myMana;
         AssetDatabase.CreateAsset(myEnemy, "Assets/Resources/Data/EnemyData/" + myEnemy.emname.Replace(" ", "_") + ".asset");
         nameFlag = false;
         getEnemies();
-        for(int i = 0; i < enemyList.Count; i++)
+        for (int i = 0; i < enemyList.Count; i++)
         {
-            if(enemyList[i].emname == myName)
+            if (enemyList[i].emname == myName)
             {
                 currentRoyce = i + 1;
             }
         }
-        //AssetDatabase.SaveAssets();
         return true;
     }
 
